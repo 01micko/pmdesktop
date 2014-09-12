@@ -36,7 +36,7 @@ which matches the desktop then finds and returns that window ID.
 
 There is one function
 
-```Window find_root(Display *dpy, int scr, int dpyWidth, int dpyHeight)```
+```Window find_root(Display *Display, int Screen, int DisplayWidth, int DisplayHeight)```
 
 which returns an X Window.
 
