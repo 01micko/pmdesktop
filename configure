@@ -1,0 +1,94 @@
+#!/bin/sh
+#very simple configure script to generate Makefile
+
+#defaults
+PREFIX=/usr/local
+LIBDIR=/lib
+MANDIR=/share/man
+
+#parameters
+while [ $# != 0 ]; do
+	I=1
+	while [ $I -lt `echo $# | wc -c` ]; do
+		case $1 in
+			--prefix*) PREFIX=`echo $1|cut -d '=' -f2`;;
+			--libdir*) LIBDIR=`echo $1|cut -d '=' -f2`;;
+			--mandir*) MANDIR=`echo $1|cut -d '=' -f2`;;
+			-h|--help)	echo '
+  -h|--help	show this help
+  --prefix=	set installation path : default /usr/local
+  --libdir=	set lib dir : default $PREFIX/lib, eg: /lib64
+  --mandir=	set manual dir : default is $PREFIX/share/man, eg: /man' 
+				exit;;
+			
+		esac
+		shift
+		I=$(($I+1))
+	done
+done
+
+echo
+echo -n "checking for gcc...	" 
+type gcc 2>&1 >/dev/null
+if [ "$?" -eq 0 ];then  echo "ok" 
+else echo -e "not found \naborting" && exit
+fi
+echo
+echo "======================="
+echo "prefix:	"$PREFIX"
+libdir:	"${PREFIX}${LIBDIR}"
+mandir:	"${PREFIX}${MANDIR}""
+echo
+echo "If these don't look right run $0 again"
+
+cat > Makefile << _MAKE
+CC=gcc
+AR=ar rcs
+PREFIX=$PREFIX
+LIBDIR=\$(PREFIX)${LIBDIR}
+MANDIR=\$(PREFIX)${MANDIR}
+INCLUDEDIR=\$(PREFIX)/include
+CFLAGS=-Wall -pedantic -std=gnu99 -g
+SONAME=libpmdesktop.so.1
+LIBNAME=libpmdesktop.so.1.0.1
+LINKERNAME=libpmdesktop.so
+
+all : libpmdesktop.a \$(SONAME)
+
+\$(SONAME) : pmdesktop2.o
+	\$(CC) -shared -Wl,-soname,\$@ -o \$(LIBNAME) \$^
+	-ln -sf \$(LIBNAME) \$(SONAME)
+	-ln -sf \$(LIBNAME) \$(LINKERNAME)
+
+libpmdesktop.a : pmdesktop.o
+	\$(AR) \$@ \$^
+	
+pmdesktop.o : pmdesktop.c
+	\$(CC) -o \$@ \$(CFLAGS) -c \$^
+
+pmdesktop2.o : pmdesktop.c
+	\$(CC) -fPIC -o \$@ \$(CFLAGS) -c \$^
+
+install : libpmdesktop.*
+	-mkdir -p \$(DESTDIR)\$(LIBDIR) \$(DESTDIR)\$(MANDIR)/man1/ \
+	\$(DESTDIR)\$(INCLUDEDIR)/
+	install -m 0755 -s \$(LIBNAME) \$(DESTDIR)\$(LIBDIR)/
+	-cp -a \$(SONAME) \$(DESTDIR)\$(LIBDIR)/
+	-cp -a \$(LINKERNAME) \$(DESTDIR)\$(LIBDIR)/
+	install -m 0644 find_root.1 \$(DESTDIR)\$(MANDIR)/man1/
+	install -m 0644 libpmdesktop.a \$(DESTDIR)\$(LIBDIR)/
+	install -m 0644 pmdesktop.h \$(DESTDIR)\$(INCLUDEDIR)/
+	ldconfig
+
+uninstall : libpmdesktop.a \$(SONAME)
+	-rm \$(LIBDIR)/libpmdesktop.a
+	-rm \$(LIBDIR)/libpmdesktop.so*
+	-rm \$(MANDIR)/man1/find_root.1
+	-rm \$(INCLUDEDIR)/pmdesktop.h
+
+clean :
+	-rm -f *.o *.a *.so*
+
+distclean :
+	-rm Makefile
+_MAKE

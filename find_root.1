@@ -1,0 +1,33 @@
+.TH FIND_ROOT 1 "12 September 2014"
+.SH NAME
+find_root()
+.SH SYNOPSIS
+
+#include <X11/Xlib.h>
+.TP
+#include <pmdesktop.h>
+.TP
+Window find_root(Display \fI*Display\fP, int \fIScreen\fP, int \fIDisplayWidth\fP, int \fIDisplayHeight\fP)
+.SH DESCRIPTION
+The find_root() function simply finds a window that corresponds to the \fIDesktop\fP
+window, a child of the \fIroot\fP window. It returns an X Window which is in hexadecimal format.
+.SH FILES
+.TP
+\fI/usr/lib/libpmdesktop.so\fR
+.TP
+\fI/usr/lib/libpmdesktop.a\fR
+.SH "SEE ALSO"
+pmck(1), XQueryTree(5)
+.SH BUGS
+.TP
+may not work correctly with all window managers
+
+.SH "AUTHOR"
+.IX Header "AUTHOR"
+Michael Amadio - 01micko@gmail.com
+.SH "COPYRIGHT AND LICENSE"
+.IX Header "COPYRIGHT AND LICENSE"
+\&\fBCopyright (C)\fR 2014 by Author.  
+.PP
+\&\fBpmdesktop\fR is free software; you can redistribute it and/or modify it
+under the terms of the \s-1GPL-v2.0\s0.
